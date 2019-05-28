@@ -1,4 +1,4 @@
-# nanoFrameworkStorage
+
 # SD card and internal storage support for nanoFramework
 
 Thanks to Adrian Soundly and Jose Somoes and everyone helped make "Storage" possible for nanoFramework.
