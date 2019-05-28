@@ -18,4 +18,6 @@ The card reader that I used for the test is the SparkFun microSD breakout board 
 This library also supports internal storage for the ESP32 boards. Serial Peripheral Interface Flash File System (SPIFFS).  
 SPIFFS is a lightweight file system connected by SPI bus. The configuration data space reserved for network, wireless, 
 certificates,  and user data is 256K. The area reserved for SPIFFS is 0x2D0000, 0x40000.
+
+![ScreenShot](https://github.com/Dweaver309/nanoFrameworkStorage/blob/master/ESP32SDCard.png)
         
