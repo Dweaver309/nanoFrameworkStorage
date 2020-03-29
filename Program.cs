@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading;
+using nanoFramework.Hardware.Esp32;
 
 namespace nfSDStorage
 {
@@ -12,6 +13,15 @@ namespace nfSDStorage
         public static void Main()
         {
             Console.WriteLine("Hello Esp32 storage! \n" );
+            
+            int MISOPin = Configuration.GetFunctionPin(DeviceFunction.SPI1_MISO);
+            Console.WriteLine("SPI1 MISO Pin " + MISOPin);
+
+            int MOSIPin = Configuration.GetFunctionPin(DeviceFunction.SPI1_MOSI);
+            Console.WriteLine("SPI1 MOSI Pin " + MOSIPin);
+
+            int CLKPin = Configuration.GetFunctionPin(DeviceFunction.SPI1_CLOCK);
+            Console.WriteLine("SPI1 Clock Pin " + CLKPin);
                   
            
             // Set constructor to SDCard defaults
