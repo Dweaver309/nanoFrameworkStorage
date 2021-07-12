@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using nanoFramework.Hardware.Esp32;
 using Windows.Storage;
 using Windows.Storage.Devices;
@@ -28,10 +29,10 @@ namespace nfSDStorage
 
     /// <summary>
     /// Class library for SD card or internal storage (SPIFFS)
-   /// </summary>
+    /// </summary>
     public class NfStorage
     {
-       
+
         public StorageFolder SDevice;
         private StorageFolder Sfolder;
         private string Fname;
@@ -53,7 +54,7 @@ namespace nfSDStorage
 
             if (DeviceIsSDCard == false)
             {
-               
+
                 StorageFolder internalDevices = Windows.Storage.KnownFolders.InternalDevices;
 
                 var internalDrives = internalDevices.GetFolders();
@@ -82,7 +83,7 @@ namespace nfSDStorage
                 // Connect to DO (digital out)
                 if (MISOPin != 25)
                 {
-                    Configuration.SetPinFunction(MISOPin, DeviceFunction.SPI1_MISI);
+                    Configuration.SetPinFunction(MISOPin, DeviceFunction.SPI1_MISO);
 
                 }
 
@@ -100,7 +101,7 @@ namespace nfSDStorage
 
                     if (SDCard.IsMounted)
                     {
-                        Console.WriteLine("Success SDCard is mounted");
+                       Debug.WriteLine("Success SDCard is mounted");
 
                         StorageFolder externalDevices = Windows.Storage.KnownFolders.RemovableDevices;
 
@@ -115,7 +116,7 @@ namespace nfSDStorage
 
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Failed to mount SDCard \n" + ex.Message);
+                   Debug.WriteLine("Failed to mount SDCard \n" + ex.Message);
                 }
 
             }
@@ -154,8 +155,8 @@ namespace nfSDStorage
                 rs[i] = file.Name;
 
                 i += 1;
-                
-                Console.WriteLine("Files -> " + file.Path);
+
+               Debug.WriteLine("Files -> " + file.Path);
 
             }
 
@@ -173,27 +174,27 @@ namespace nfSDStorage
             // Not capitalized in internal storage
             if (IsInternalStorage == false)
                 FilePath = FilePath.ToUpper();
-          
+
             try
             {
-               
-             //  Rem directory and filename set in FileExists
-             if (FileExists(FilePath))
-             {
 
-              var File = Sfolder.CreateFile(Fname, CreationCollisionOption.OpenIfExists);
-                                   
-              return FileIO.ReadText(File);
+                //  Rem directory and filename set in FileExists
+                if (FileExists(FilePath))
+                {
 
-             }
+                    var File = Sfolder.CreateFile(Fname, CreationCollisionOption.OpenIfExists);
 
-              return string.Empty;    
+                    return FileIO.ReadText(File);
+
+                }
+
+                return string.Empty;
 
             }
 
             catch (Exception ex)
             {
-                return "Error: Reading file " + ex.Message ;
+                return "Error: Reading file " + ex.Message;
             }
 
         }
@@ -217,35 +218,35 @@ namespace nfSDStorage
                 // Directory and file name set in FileExists
                 if (FileExists(FilePath))
                 {
-                 
-                     var File = Sfolder.CreateFile(Fname, CreationCollisionOption.OpenIfExists);
+
+                    var File = Sfolder.CreateFile(Fname, CreationCollisionOption.OpenIfExists);
 
                     IBuffer readBuffer = FileIO.ReadBuffer(File);
-                    
+
                     using (DataReader dataReader = DataReader.FromBuffer(readBuffer))
                     {
                         byte[] cBuf = new byte[readBuffer.Length];
-                      
-                       dataReader.ReadBytes(cBuf);
-                       
-                        Console.WriteLine("Buffer length" + cBuf.Length);
-                       
+
+                        dataReader.ReadBytes(cBuf);
+
+                       Debug.WriteLine("Buffer length" + cBuf.Length);
+
                         return cBuf;
 
                     }
-                    
+
                 }
-                
+
                 return ErrorByte;
 
             }
 
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
+               Debug.WriteLine("Error: " + ex.Message);
 
                 return ErrorByte;
-              
+
             }
 
         }
@@ -256,49 +257,49 @@ namespace nfSDStorage
         /// </summary>
         public void WriteBuffer(string FilePath, byte[] Buffer, Boolean Append = true)
         {
-           
+
             try
             {
-                
+
                 // Not capitalized in internal storage
                 if (IsInternalStorage == false)
                     FilePath = FilePath.ToUpper();
 
                 SetDirectoryandFilename(FilePath);
-               
-                    if (Append)
-                    {
-    
-                        byte[] rBuffer = ReadBuffer(FilePath);
 
-                        byte[] writeBuffer = new byte[rBuffer.Length + Buffer.Length];
+                if (Append)
+                {
 
-                        Array.Copy(rBuffer, 0, writeBuffer, 0, rBuffer.Length - 1);
+                    byte[] rBuffer = ReadBuffer(FilePath);
 
-                        Array.Copy(Buffer, 0, writeBuffer, rBuffer.Length, Buffer.Length - 1);
+                    byte[] writeBuffer = new byte[rBuffer.Length + Buffer.Length];
 
-                        var File = Sfolder.CreateFile(Fname, CreationCollisionOption.ReplaceExisting);
+                    Array.Copy(rBuffer, 0, writeBuffer, 0, rBuffer.Length - 1);
 
-                        FileIO.WriteBytes(File, writeBuffer);
+                    Array.Copy(Buffer, 0, writeBuffer, rBuffer.Length, Buffer.Length - 1);
 
-                        Console.WriteLine("Wrote " + writeBuffer.Length + " bytes to " + FilePath + " for append");
+                    var File = Sfolder.CreateFile(Fname, CreationCollisionOption.ReplaceExisting);
 
-                    }
+                    FileIO.WriteBytes(File, writeBuffer);
 
-                    else
-                    { 
-                        var File = Sfolder.CreateFile(Fname, CreationCollisionOption.ReplaceExisting);
+                   Debug.WriteLine("Wrote " + writeBuffer.Length + " bytes to " + FilePath + " for append");
 
-                        FileIO.WriteBytes(File, Buffer);
+                }
 
-                        Console.WriteLine("Wrote " + Buffer.Length + " bytes to " + FilePath);
+                else
+                {
+                    var File = Sfolder.CreateFile(Fname, CreationCollisionOption.ReplaceExisting);
 
-                    }
-             
+                    FileIO.WriteBytes(File, Buffer);
+
+                   Debug.WriteLine("Wrote " + Buffer.Length + " bytes to " + FilePath);
+
+                }
+
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Error writing binary file: " + ex.Message);
+               Debug.WriteLine("Error writing binary file: " + ex.Message);
 
             }
         }
@@ -314,51 +315,51 @@ namespace nfSDStorage
 
             try
             {
-           
-            if (IsInternalStorage)
-            {
-                Console.WriteLine("\n Directories are currently not supported for internal storage.\n");
-                
-            }
-           
-            if (StartingDirectory == "Root")
-            {
-                Sfolder = SDevice;
 
-            }
-            else
-            {
-                StartingDirectory = StartingDirectory.ToUpper();
+                if (IsInternalStorage)
+                {
+                   Debug.WriteLine("\n Directories are currently not supported for internal storage.\n");
 
-                SetDirectory(StartingDirectory);
+                }
 
-            }
+                if (StartingDirectory == "Root")
+                {
+                    Sfolder = SDevice;
 
-            var foldersInDevice = Sfolder.GetFolders();
+                }
+                else
+                {
+                    StartingDirectory = StartingDirectory.ToUpper();
 
-            int fl = foldersInDevice.Length;
+                    SetDirectory(StartingDirectory);
 
-            string[] rs = new string[fl];
+                }
 
-            int i = 0;
+                var foldersInDevice = Sfolder.GetFolders();
 
-            foreach (StorageFolder folder in foldersInDevice)
-            {
-                rs[i] = folder.Path;
+                int fl = foldersInDevice.Length;
 
-                i += 1;
+                string[] rs = new string[fl];
 
-                Console.WriteLine($"Folder ->{folder.Name}");
+                int i = 0;
 
-            }
+                foreach (StorageFolder folder in foldersInDevice)
+                {
+                    rs[i] = folder.Path;
 
-            return rs;
+                    i += 1;
+
+                   Debug.WriteLine($"Folder ->{folder.Name}");
+
+                }
+
+                return rs;
 
             }
 
             catch (Exception)
             {
-                Console.WriteLine("\n Directories are currently not supported for internal storage.\n");
+               Debug.WriteLine("\n Directories are currently not supported for internal storage.\n");
 
                 string[] emptyStringArray = new string[0];
 
@@ -377,43 +378,43 @@ namespace nfSDStorage
         {
             try
             {
-          
-            char slash = '\\';
 
-            Sfolder = SDevice;
+                char slash = '\\';
 
-            if (FilePath.IndexOf(slash) == -1)
-            {
+                Sfolder = SDevice;
 
-                Console.WriteLine("File path -> " + FilePath);
-                Fname = FilePath;
-
-            }
-
-            else
-            {
-                string[] str = FilePath.Split(slash);
-               
-                for (int i = 0; i < str.Length - 1; i++)
+                if (FilePath.IndexOf(slash) == -1)
                 {
 
-                   Sfolder = Sfolder.CreateFolder(str[i], CreationCollisionOption.ReplaceExisting);
-
-                   Console.WriteLine("Successfully created folder: " + Sfolder.Path);
+                   Debug.WriteLine("File path -> " + FilePath);
+                    Fname = FilePath;
 
                 }
 
-                Fname = str[str.Length - 1];
+                else
+                {
+                    string[] str = FilePath.Split(slash);
 
-                Console.WriteLine("File name -> " + Fname);
+                    for (int i = 0; i < str.Length - 1; i++)
+                    {
 
-              }
+                        Sfolder = Sfolder.CreateFolder(str[i], CreationCollisionOption.ReplaceExisting);
+
+                       Debug.WriteLine("Successfully created folder: " + Sfolder.Path);
+
+                    }
+
+                    Fname = str[str.Length - 1];
+
+                   Debug.WriteLine("File name -> " + Fname);
+
+                }
 
             }
             catch (Exception)
             {
-                Console.WriteLine("Directories are not supported for internal storage");
-                
+               Debug.WriteLine("Directories are not supported for internal storage");
+
             }
 
         }
@@ -434,12 +435,12 @@ namespace nfSDStorage
 
                 if (StartingDirectory.IndexOf(slash) == -1)
                 {
-                 
-                    if(StartingDirectory != "Root")
+
+                    if (StartingDirectory != "Root")
                     {
                         Sfolder = Sfolder.CreateFolder(StartingDirectory, CreationCollisionOption.ReplaceExisting);
 
-                        Console.WriteLine("Successfully created folder: " + Sfolder.Path);
+                       Debug.WriteLine("Successfully created folder: " + Sfolder.Path);
                     }
 
                 }
@@ -448,12 +449,12 @@ namespace nfSDStorage
                 {
                     string[] str = StartingDirectory.Split(slash);
 
-                    for (int i = 0; i < str.Length ; i++)
+                    for (int i = 0; i < str.Length; i++)
                     {
 
                         Sfolder = Sfolder.CreateFolder(str[i], CreationCollisionOption.ReplaceExisting);
 
-                        Console.WriteLine("Successfully created folder: " + Sfolder.Path);
+                       Debug.WriteLine("Successfully created folder: " + Sfolder.Path);
 
                     }
 
@@ -462,7 +463,7 @@ namespace nfSDStorage
             }
             catch (Exception)
             {
-                Console.WriteLine("Directories are not supported for internal storage");
+               Debug.WriteLine("Directories are not supported for internal storage");
 
             }
 
@@ -484,35 +485,35 @@ namespace nfSDStorage
 
                 SetDirectoryandFilename(FilePath);
 
-                    if (Append)
-                    {
+                if (Append)
+                {
 
-                        string st = ReadText(FilePath);
+                    string st = ReadText(FilePath);
 
-                        var File = Sfolder.CreateFile(Fname, CreationCollisionOption.ReplaceExisting);
+                    var File = Sfolder.CreateFile(Fname, CreationCollisionOption.ReplaceExisting);
 
-                        st = st + Text;
+                    st = st + Text;
 
-                        FileIO.WriteText(File, st);
+                    FileIO.WriteText(File, st);
 
-                        Console.WriteLine("Wrote " + st.Length + " bytes to " + FilePath + " for append");
+                   Debug.WriteLine("Wrote " + st.Length + " bytes to " + FilePath + " for append");
 
-                    }
+                }
 
-                    else
-                    {
-                        var File = Sfolder.CreateFile(Fname, CreationCollisionOption.ReplaceExisting);
+                else
+                {
+                    var File = Sfolder.CreateFile(Fname, CreationCollisionOption.ReplaceExisting);
 
-                        FileIO.WriteText(File, Text);
+                    FileIO.WriteText(File, Text);
 
-                        Console.WriteLine("Wrote " + Text.Length + " bytes to " + FilePath);
-                    }
-             
+                   Debug.WriteLine("Wrote " + Text.Length + " bytes to " + FilePath);
+                }
+
             }
 
             catch (Exception ex)
             {
-                Console.WriteLine("Error writing text: " + ex.Message);
+               Debug.WriteLine("Error writing text: " + ex.Message);
 
             }
         }
@@ -537,16 +538,16 @@ namespace nfSDStorage
                 {
                     File.Delete();
 
-                    Console.WriteLine(File.Name + " was deleted");
+                   Debug.WriteLine(File.Name + " was deleted");
                 }
 
             }
-        } 
+        }
 
         /// <summary>
         /// Delete directory from the starting directory
         /// </summary>
-        public void DeleteDirectory( string DirectoryToDelete , string StartingDirectory = "Root")
+        public void DeleteDirectory(string DirectoryToDelete, string StartingDirectory = "Root")
         {
 
             try
@@ -566,36 +567,36 @@ namespace nfSDStorage
 
                 }
 
-            Boolean found = false;
+                Boolean found = false;
 
-            var Folders = Sfolder.GetFolders();
+                var Folders = Sfolder.GetFolders();
 
-            foreach (var Folder in Folders)
-            {
-                Console.WriteLine("Folder Name -> " + Folder.Name);
-
-                if (DirectoryToDelete == Folder.Name)
+                foreach (var Folder in Folders)
                 {
+                   Debug.WriteLine("Folder Name -> " + Folder.Name);
+
+                    if (DirectoryToDelete == Folder.Name)
+                    {
 
 
-                    Folder.Delete();
+                        Folder.Delete();
 
-                    Console.WriteLine(Folder.Path + " deleted");
+                       Debug.WriteLine(Folder.Path + " deleted");
 
-                    found = true;
+                        found = true;
+
+                    }
 
                 }
 
-            }
-
-            if (found == false)
-                Console.WriteLine(DirectoryToDelete + " not found");
+                if (found == false)
+                   Debug.WriteLine(DirectoryToDelete + " not found");
 
             }
-            catch (Exception ex )
+            catch (Exception ex)
             {
 
-                Console.WriteLine("Error deleting directory the directory must be empty: " + ex.Message);
+               Debug.WriteLine("Error deleting directory the directory must be empty: " + ex.Message);
 
             }
 
@@ -617,27 +618,27 @@ namespace nfSDStorage
 
             var Files = Sfolder.GetFiles();
 
-            Console.WriteLine("Fname " + Fname);
+           Debug.WriteLine("Fname " + Fname);
 
             foreach (var File in Files)
             {
 
-                Console.WriteLine("Filename " + File.Name);
+               Debug.WriteLine("Filename " + File.Name);
 
                 if (Fname == File.Name)
                 {
-                    Console.WriteLine("Found " + File.Name);
+                   Debug.WriteLine("Found " + File.Name);
                     if (FileExists(NewFilename))
                     {
-                        Console.WriteLine(FilePath + " can't be renamed " + NewFilename + " exists");
+                       Debug.WriteLine(FilePath + " can't be renamed " + NewFilename + " exists");
 
                     }
 
                     else
                     {
                         File.Rename(NewFilename);
-                     
-                        Console.WriteLine(File.Name + " renamed " + NewFilename);
+
+                       Debug.WriteLine(File.Name + " renamed " + NewFilename);
 
                         found = true;
 
@@ -648,7 +649,7 @@ namespace nfSDStorage
             }
 
             if (found == false)
-                Console.WriteLine(FilePath + " not found");
+               Debug.WriteLine(FilePath + " not found");
 
         }
 
@@ -669,10 +670,10 @@ namespace nfSDStorage
 
                 foreach (var File in Files)
                 {
-                 
+
                     if (Fname == File.Name)
                     {
-                        Console.WriteLine(Fname + " exists");
+                       Debug.WriteLine(Fname + " exists");
 
                         return true;
 
@@ -680,7 +681,7 @@ namespace nfSDStorage
 
                 }
 
-                Console.WriteLine(Fname + " not found");
+               Debug.WriteLine(Fname + " not found");
 
                 return false;
 
@@ -689,7 +690,7 @@ namespace nfSDStorage
 
             catch (Exception ex)
             {
-                Console.WriteLine("Error: " + ex.Message);
+               Debug.WriteLine("Error: " + ex.Message);
 
                 return false;
             }
@@ -699,16 +700,16 @@ namespace nfSDStorage
         /// <summary>
         /// If SDcard is mounted Unmount the SDCard
         /// </summary>
-        public void  SDCardUnmount()
+        public void SDCardUnmount()
         {
             //  Currently the mount card class only allows for 1 device to be mounted
             if (SDCard.IsMounted)
             {
                 SDCard.Unmount();
-                Console.WriteLine("SDCard successfully unmounted");
+               Debug.WriteLine("SDCard successfully unmounted");
             }
         }
-    
+
     }
 
 }
